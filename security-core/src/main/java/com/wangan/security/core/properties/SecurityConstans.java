@@ -6,7 +6,7 @@ package com.wangan.security.core.properties;
  */
 public interface SecurityConstans {
 
-	public static final String DEFAULT_LOGIN_FORM_ULR="/authentication/form";
+	public static final String DEFAULT_LOGIN_FORM_ULR="/authentication/for";
 	public static final String DEFAULT_LOGIN_REQ_URL="/user/login";
 	/**
 	 * 默认登录页面
