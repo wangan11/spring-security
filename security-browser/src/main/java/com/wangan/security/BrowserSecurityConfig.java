@@ -35,13 +35,15 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	private DataSource dataSource;
 	@Autowired
 	private UserDetailsService userDetailsService;
+	@Autowired
+	private ValidateCodeFilter validateCodeFilter;
 //	@Bean
 //	public PasswordEncoder passwordEncoder() {
 //		return new BCryptPasswordEncoder();
 //	}
 
 	protected void applyPasswordAuthenticationConfig(HttpSecurity http) throws Exception {
-		http.addFilterBefore(new ValidateCodeFilter(), UsernamePasswordAuthenticationFilter.class)
+		http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
 				.formLogin()
 				.loginPage(SecurityConstans.DEFAULT_LOGIN_REQ_URL)
 				.loginProcessingUrl(SecurityConstans.DEFAULT_LOGIN_FORM_ULR).successHandler(springAuthentionSuccessHandler)
@@ -51,7 +53,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		applyPasswordAuthenticationConfig(http);
-		http.rememberMe().tokenRepository(persistentTokenRepository()).userDetailsService(userDetailsService).and().authorizeRequests().antMatchers(SecurityConstans.DEFAULT_LOGIN_REQ_URL, "/get/ImageCode",
+		http.rememberMe().tokenRepository(persistentTokenRepository()).tokenValiditySeconds(100)
+				.userDetailsService(userDetailsService).and().authorizeRequests().antMatchers(SecurityConstans.DEFAULT_LOGIN_REQ_URL, "/get/ImageCode",
 				SecurityConstans.DEFAULT_LOGIN_PAGE_URL).permitAll().anyRequest().authenticated()
 				.and().csrf().disable();
 	}

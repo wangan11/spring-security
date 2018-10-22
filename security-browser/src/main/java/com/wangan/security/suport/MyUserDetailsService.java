@@ -17,8 +17,6 @@ public class MyUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		logger.info("查找登陆用户名：{}", username);
 		//模拟根据用户名查找用户信息
-
-
 		return new User(username, "123456", AuthorityUtils.commaSeparatedStringToAuthorityList("admin"));
 	}
 
