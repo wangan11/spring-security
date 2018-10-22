@@ -3,12 +3,20 @@ package com.wangan.security;
 import com.wangan.security.Filter.ValidateCodeFilter;
 import com.wangan.security.core.properties.SecurityConstans;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.social.connect.web.HttpSessionSessionStrategy;
+import org.springframework.social.connect.web.SessionStrategy;
+
+import javax.sql.DataSource;
 
 
 /**
@@ -23,14 +31,18 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	private AuthenticationSuccessHandler springAuthentionSuccessHandler;
 	@Autowired
 	private AuthenticationFailureHandler springAuthentionFailure;
+	@Autowired
+	private DataSource dataSource;
+	@Autowired
+	private UserDetailsService userDetailsService;
 //	@Bean
 //	public PasswordEncoder passwordEncoder() {
 //		return new BCryptPasswordEncoder();
 //	}
 
 	protected void applyPasswordAuthenticationConfig(HttpSecurity http) throws Exception {
-		http.addFilterBefore(new ValidateCodeFilter(),UsernamePasswordAuthenticationFilter.class)
-		.formLogin()
+		http.addFilterBefore(new ValidateCodeFilter(), UsernamePasswordAuthenticationFilter.class)
+				.formLogin()
 				.loginPage(SecurityConstans.DEFAULT_LOGIN_REQ_URL)
 				.loginProcessingUrl(SecurityConstans.DEFAULT_LOGIN_FORM_ULR).successHandler(springAuthentionSuccessHandler)
 				.failureHandler(springAuthentionFailure);
@@ -39,9 +51,22 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		applyPasswordAuthenticationConfig(http);
-		http.rememberMe().and().authorizeRequests().antMatchers(SecurityConstans.DEFAULT_LOGIN_REQ_URL,"/get/ImageCode",
+		http.rememberMe().tokenRepository(persistentTokenRepository()).userDetailsService(userDetailsService).and().authorizeRequests().antMatchers(SecurityConstans.DEFAULT_LOGIN_REQ_URL, "/get/ImageCode",
 				SecurityConstans.DEFAULT_LOGIN_PAGE_URL).permitAll().anyRequest().authenticated()
 				.and().csrf().disable();
 	}
 
+	@Bean
+	public PersistentTokenRepository persistentTokenRepository() {
+		JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+		tokenRepository.setDataSource(dataSource);
+//		tokenRepository.setCreateTableOnStartup(true);
+		return tokenRepository;
+	}
+
+
+	@Bean("springSessionStrategy")
+	public  SessionStrategy creteSessionStrategy(){
+		return new HttpSessionSessionStrategy();
+	}
 }

@@ -18,8 +18,7 @@ public class BrowserAppliction {
 	}
 
 
-	@Bean
-	public SessionStrategy getStratege(){
-	 return new HttpSessionSessionStrategy();
-	}
+
+
+
 }
